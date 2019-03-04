@@ -4527,15 +4527,6 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
-//
-//
-//
-//
-//
-//
-//
-//
-//
 
  // Vue.use(Loading);
 // Import stylesheet
@@ -4615,12 +4606,7 @@ __webpack_require__.r(__webpack_exports__);
 
           return new Promise(function (resolve, reject) {
             setTimeout(function () {
-              var formData = new FormData(); // if (this.files) {
-              //     for (var i = 0; i < this.files.length; i++) {
-              //         let file = this.files[i];
-              //         formData.append('files[' + i + ']', file);
-              //     }
-              // }
+              var formData = new FormData();
 
               if (_this.archivoCurp) {
                 formData.append('tipo1', "Curp");
@@ -4673,37 +4659,10 @@ __webpack_require__.r(__webpack_exports__);
                 headers: {
                   'Content-Type': 'multipart/form-data'
                 }
-              }).then(function (response) {
-                loader.hide();
-              }).catch(function (error) {
-                loader.hide();
+              }).then(function (response) {}).catch(function (error) {
                 _this.errors = error.response.data.errors;
-              }).finally(function () {
-                return loader.hide();
-              });
+              }).finally(function () {});
               var curp = _this.curps;
-              /*formData.append("Curp", curp['Curp']);
-              formData.append('Paterno', this.curps['Paterno']);
-              formData.append('Materno', this.curps['Materno']);
-              formData.append('Nombre', this.curps['Nombre']);
-              formData.append('Fecha_Nacimiento', this.curps['Fecha_Nacimiento']);
-              formData.append('Municipio', this.curps['Municipio']);
-              formData.append('Entidad', this.curps['Entidad']);
-              formData.append('Nacionalidad', this.curps['Nacionalidad']);
-              formData.append('Pais_Nacimiento', this.curps['Pais_Nacimiento']);
-              formData.append('Sexo', this.curps['Sexo']);
-              formData.append('Celular', this.curps['Celular']);
-              formData.append('Telefono', this.curps['Telefono']);
-              formData.append('Correo', this.curps['Correo']);
-              formData.append('DomicilioE', this.curps.domicilio['estado']);
-              formData.append("DomicilioM", this.curps.domicilio['municipio']);
-              formData.append("DomicilioC", this.curps.colonias);
-              formData.append("DomicilioD", this.curps.direccion);
-              formData.append("Clave_Ultimo_Grado", this.curps["Clave_Ultimo_Grado"]);
-              formData.append('Escuela_Procedencia', this.curps["Escuela_Procedencia"]);
-              formData.append('Numero_Certificado', this.curps["Numero_Certificado"]);
-              formData.append("Nivel_Escolaridad", this.curps["Nivel_Escolaridad"]);*/
-
               axios.post("/api/aspirantes/preregistrar/", curp).then(function (response) {
                 for (var i = 0; i < response.data.archivos.length; i++) {
                   if (response.data.archivos[i].tipo == "Curp") {
@@ -4737,14 +4696,21 @@ __webpack_require__.r(__webpack_exports__);
                   }
                 }
 
-                loader.hide();
-
-                _this.$swal({
-                  title: 'Correcto!',
-                  text: 'Has Sido Pre-registrado Correctamente',
-                  type: 'success',
-                  confirmButtonText: 'Aceptar'
-                });
+                if (response.data.arch) {
+                  _this.$swal({
+                    title: 'Advertencia!',
+                    text: 'Te Faltan Archivos Por Subir!',
+                    type: 'warning',
+                    confirmButtonText: 'Aceptar'
+                  });
+                } else {
+                  _this.$swal({
+                    title: 'Correcto!',
+                    html: 'Has Sido Pre-registrado Correctamente!<br>Se Te Ha Enviado Un Mensaje de Bienvenida!',
+                    type: 'success',
+                    confirmButtonText: 'Aceptar'
+                  });
+                }
               }).catch(function (error) {
                 loader.hide();
                 _this.errors = error.response.data.errors;
@@ -4791,51 +4757,45 @@ __webpack_require__.r(__webpack_exports__);
         this.archivoIdenti.push(identificacion[i]);
       }
     },
-    generarArchivo: function generarArchivo() {
-      var uploadedFiles = this.$refs.files.files;
-
-      for (var i = 0; i < uploadedFiles.length; i++) {
-        this.files.push(uploadedFiles[i]);
-      }
-    },
-    removeFile: function removeFile(key) {
-      this.files.splice(key, 1);
-    },
-    removeCurp: function removeCurp(key, file, id) {
+    removeArchivo: function removeArchivo(key, file, id, arrays) {
       var formData = new FormData();
       formData.append("file", file);
       formData.append("id", id);
       axios.post("/api/archivos/eliminar", formData).then(function (response) {});
-      this.archivoCurp.splice(key, 1);
+      arrays.splice(key, 1);
     },
-    removeActa: function removeActa(key, file, id) {
-      var formData = new FormData();
-      formData.append("file", file);
-      formData.append("id", id);
-      axios.post("/api/archivos/eliminar", formData).then(function (response) {});
-      this.archivoActa.splice(key, 1);
-    },
-    removeCertificado: function removeCertificado(key, file, id) {
-      var formData = new FormData();
-      formData.append("file", file);
-      formData.append("id", id);
-      axios.post("/api/archivos/eliminar", formData).then(function (response) {});
-      this.archivoCertificado.splice(key, 1);
-    },
-    removeComproba: function removeComproba(key, file, id) {
-      var formData = new FormData();
-      formData.append("file", file);
-      formData.append("id", id);
-      axios.post("/api/archivos/eliminar", formData).then(function (response) {});
-      this.archivoComproba.splice(key, 1);
-    },
-    removeIdenti: function removeIdenti(key, file, id) {
-      var formData = new FormData();
-      formData.append("file", file);
-      formData.append("id", id);
-      axios.post("/api/archivos/eliminar", formData).then(function (response) {});
-      this.archivoIdenti.splice(key, 1);
-    },
+    // removeActa(key, file, id) {
+    //     let formData = new FormData();
+    //     formData.append("file", file);
+    //     formData.append("id", id);
+    //     axios.post(`/api/archivos/eliminar`, formData)
+    //         .then(response => {})
+    //     this.archivoActa.splice(key, 1);
+    // },
+    // removeCertificado(key, file, id) {
+    //     let formData = new FormData();
+    //     formData.append("file", file);
+    //     formData.append("id", id);
+    //     axios.post(`/api/archivos/eliminar`, formData)
+    //         .then(response => {})
+    //     this.archivoCertificado.splice(key, 1);
+    // },
+    // removeComproba(key, file, id) {
+    //     let formData = new FormData();
+    //     formData.append("file", file);
+    //     formData.append("id", id);
+    //     axios.post(`/api/archivos/eliminar`, formData)
+    //         .then(response => {})
+    //     this.archivoComproba.splice(key, 1);
+    // },
+    // removeIdenti(key, file, id) {
+    //     let formData = new FormData();
+    //     formData.append("file", file);
+    //     formData.append("id", id);
+    //     axios.post(`/api/archivos/eliminar`, formData)
+    //         .then(response => {})
+    //     this.archivoIdenti.splice(key, 1);
+    // },
     getCodigo: function getCodigo() {
       var _this2 = this;
 
@@ -4887,7 +4847,7 @@ __webpack_require__.r(__webpack_exports__);
     setLoading: function setLoading(value) {
       this.loadingWizard = value;
     },
-    handleValidation: function handleValidation(isValid, tabIndex) {// console.log('Tab: ' + tabIndex + ' valid: ' + isValid)
+    handleValidation: function handleValidation(isValid, tabIndex) {// console.log('Tab: ' + tabIndex + ' valid: ' + i
     },
     handleErrorMessage: function handleErrorMessage(errorMsg) {
       this.errorMsg = errorMsg;
@@ -4936,6 +4896,12 @@ __webpack_require__.r(__webpack_exports__);
           if (_this4.$refs.terminos.checked == true) {
             resolve(true);
           } else {
+            _this4.$swal({
+              type: 'error',
+              title: 'Error',
+              text: 'No Aceptó Los Terminos y Condiciones!'
+            });
+
             reject('No aceptó los terminos y condiciones');
           }
         }, 1000);
@@ -5084,7 +5050,7 @@ __webpack_require__.r(__webpack_exports__);
         }, 1000);
       });
     },
-    //#endregion}
+    //#endregion
     getCurrentYear: function getCurrentYear() {
       return new Date().getFullYear();
     },
@@ -5173,9 +5139,7 @@ __webpack_require__.r(__webpack_exports__);
           var url = window.URL.createObjectURL(new Blob([response.data]));
           var link = document.createElement('a');
           link.href = url;
-          window.open(url, '_blank'); // link.setAttribute('download', 'file.pdf');
-          // document.body.appendChild(link);
-          // link.click();
+          window.open(url, '_blank');
         });
       } else {
         axios({
@@ -5187,21 +5151,12 @@ __webpack_require__.r(__webpack_exports__);
         }).then(function (response) {
           var url = window.URL.createObjectURL(new Blob([response.data]));
           var link = document.createElement('a');
-          link.href = url; // window.open(url,'_blank');
-
+          link.href = url;
           link.setAttribute('download', files);
           document.body.appendChild(link);
           link.click();
         });
-      } // axios.post(`/api/archivos/visualizar`, formData)
-      //     .then(response => {
-      //       let basesup = btoa(response)
-      //       let pdfWindow = window.open("")
-      //       pdfWindow.document.write("<iframe width='100%' height='100%' src='data:application/pdf;base64, " + encodeURI(basesup)+"'></iframe>")
-      //
-      //         console.log(response.data);
-      //     })
-
+      }
     }
   }
 });
@@ -42270,6 +42225,22 @@ var render = function() {
                     required: ""
                   }
                 })
+              ]),
+              _vm._v(" "),
+              _c("div", { staticClass: "form-group" }, [
+                _c(
+                  "a",
+                  {
+                    staticClass: "btn btn-primary btn-md active",
+                    attrs: {
+                      href: "https://www.gob.mx/curp/",
+                      role: "button",
+                      "aria-pressed": "true",
+                      target: "_blank"
+                    }
+                  },
+                  [_vm._v("Consulta CURP")]
+                )
               ])
             ]
           ),
@@ -43338,7 +43309,24 @@ var render = function() {
                         ? _c("div", { staticClass: "invalid-feedback" }, [
                             _vm._v(_vm._s(_vm.errors.Folio_Surems[0]))
                           ])
-                        : _vm._e()
+                        : _vm._e(),
+                      _vm._v(" "),
+                      _c("div", { staticClass: "form-group" }, [
+                        _c(
+                          "a",
+                          {
+                            staticClass: "btn btn-primary btn-md active",
+                            attrs: {
+                              href:
+                                "http://surems.seg.guanajuato.gob.mx/Account/Login",
+                              role: "button",
+                              "aria-pressed": "true",
+                              target: "_blank"
+                            }
+                          },
+                          [_vm._v("Consulta Folio SUREMS")]
+                        )
+                      ])
                     ]),
                     _vm._v(" "),
                     _c("div", { staticClass: "form-group col-md-8" }, [
@@ -43701,10 +43689,11 @@ var render = function() {
                                       staticClass: "btn btn-danger btn-sm",
                                       on: {
                                         click: function($event) {
-                                          return _vm.removeCurp(
+                                          return _vm.removeArchivo(
                                             key,
                                             file.ruta,
-                                            file.id
+                                            file.id,
+                                            _vm.archivoCurp
                                           )
                                         }
                                       }
@@ -43818,10 +43807,11 @@ var render = function() {
                                       staticClass: "btn btn-danger btn-sm",
                                       on: {
                                         click: function($event) {
-                                          return _vm.removeActa(
+                                          return _vm.removeArchivo(
                                             key,
                                             file.ruta,
-                                            file.id
+                                            file.id,
+                                            _vm.archivoActa
                                           )
                                         }
                                       }
@@ -43935,10 +43925,11 @@ var render = function() {
                                       staticClass: "btn btn-danger btn-sm",
                                       on: {
                                         click: function($event) {
-                                          return _vm.removeCertificado(
+                                          return _vm.removeArchivo(
                                             key,
                                             file.ruta,
-                                            file.id
+                                            file.id,
+                                            _vm.archivoCertificado
                                           )
                                         }
                                       }
@@ -44052,10 +44043,11 @@ var render = function() {
                                       staticClass: "btn btn-danger btn-sm",
                                       on: {
                                         click: function($event) {
-                                          return _vm.removeIdenti(
+                                          return _vm.removeArchivo(
                                             key,
                                             file.ruta,
-                                            file.id
+                                            file.id,
+                                            _vm.archivoIdenti
                                           )
                                         }
                                       }
@@ -44169,10 +44161,11 @@ var render = function() {
                                       staticClass: "btn btn-danger btn-sm",
                                       on: {
                                         click: function($event) {
-                                          return _vm.removeComproba(
+                                          return _vm.removeArchivo(
                                             key,
                                             file.ruta,
-                                            file.id
+                                            file.id,
+                                            _vm.archivoComproba
                                           )
                                         }
                                       }
@@ -56395,7 +56388,6 @@ Vue.use(vue_cool_select__WEBPACK_IMPORTED_MODULE_3___default.a);
 
 
 Vue.use(vue_loading_overlay__WEBPACK_IMPORTED_MODULE_5___default.a);
-Vue.config.devtools = true;
 /**
  * The following block of code may be used to automatically register your
  * Vue components. It will recursively scan this directory for the Vue

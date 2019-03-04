@@ -13,13 +13,11 @@ use Illuminate\Http\Request;
 use GuzzleHttp\Client;
 use Carbon\Carbon;
 use Storage;
+use Mail;
 
 class AspiranteController extends Controller
 {
-  public function __construct()
-  {
-
-  }
+  
     public function index()
     {
         //
@@ -33,8 +31,6 @@ class AspiranteController extends Controller
 
     public function store(Request $request)
     {
-
-
         if ($request->count==1) {
             $reglas = [ 'Curp' => 'required|unique:aspirantes,Curp,'.$request->id,
             'Correo' => 'required|email|unique:aspirantes,Correo,'.$request->id,//|email|unique:users',
@@ -55,8 +51,9 @@ class AspiranteController extends Controller
             //Aspirante::create($request->all());
             $this->validate($request, $reglas, $mensajes);
             $lol = Aspirante::updateOrCreate(
-              ['id'=>$request->id],
-            $request->except(['Edad', 'count', 'Lugar', 'Estado', 'Nacionalidads']));
+                ['id'=>$request->id],
+                $request->except(['Edad', 'count', 'Lugar', 'Estado', 'Nacionalidads'])
+            );
 
             $message = "First Step";
             return $lol;
@@ -68,12 +65,15 @@ class AspiranteController extends Controller
               'Anio_Egreso' => 'required',
               'Numero_Certificado' => 'required|numeric',
               'pais_id' => 'required',
-              'Folio_surems' => 'numeric|digits:7'
+
             ];
-            if($request->pais_id==4142)
+            if($request->Edad < 18)
             {
-              $reglas2['municipio_id'] = 'required';
-              $reglas2['estado_id'] = 'required';
+              $reglas2['Folio_Surems'] = 'required|numeric|digits:9';
+            }
+            if ($request->pais_id==4142) {
+                $reglas2['municipio_id'] = 'required';
+                $reglas2['estado_id'] = 'required';
             }
             $mensajes2 = [ 'Nivel_Escolaridad.required' => "Campo Requerido",
               'Escuela_Procedencia.required' => "Campo Requerido",
@@ -87,13 +87,15 @@ class AspiranteController extends Controller
               'pais_id.required' => "Campo Requerido",
               'estado_id.required' => "Campo Requerido",
               'municipio_id.required' => "Campo Requerido",
-              'Folio_surems.numeric' => 'Ingrese Solo Números',
-              'Folio_surems.digits' => 'Debe Ser Un Valor De 7 Digitos'
+              'Folio_Surems.numeric' => 'Ingrese Solo Números',
+              'Folio_Surems.digits' => 'Debe Ser Un Valor De 9 Digitos',
+              'Folio_Surems.required'=> 'Campo Requerido'
             ];
             $this->validate($request, $reglas2, $mensajes2);
             $lol = Aspirante::updateOrCreate(
-              ['id'=>$request->id],
-            $request->except([ 'count', 'Lugar', 'Estado', 'Nacionalidads']));
+                ['id'=>$request->id],
+                $request->except([ 'count', 'Lugar', 'Estado', 'Nacionalidads'])
+            );
             $message = "Second Step";
             return $lol;
         }
@@ -108,141 +110,144 @@ class AspiranteController extends Controller
             ];
             $this->validate($request, $reglas3, $mensajes3);
             $lol = Aspirante::updateOrCreate(
-              ['id'=>$request->id],
-            $request->except(['Edad', 'count', 'Lugar', 'Estado', 'Nacionalidads']));
+                ['id'=>$request->id],
+                $request->except(['Edad', 'count', 'Lugar', 'Estado', 'Nacionalidads'])
+            );
             $message = "Third Step";
             $archivos = Archivo::where('aspirante_id', $lol->id)->get();
             $lol['archivos']=$archivos;
+            $count = Archivo::where('aspirante_id', $request->id)->count();
+            if ($count == 5) {
+                $data = ['usuario' => $lol->Nombre.' '.$lol->Primer_Apellido.' '.$lol->Segundo_Apellido];
+
+                Mail::send('mails.mail', $data, function ($message) use ($lol){
+                    $message->from('preparatoriaabierta@seg.guanajuato.gob.mx', 'Prepa Abierta');
+
+                    $message->to($lol->Correo)->subject('Preinscripción');
+                });
+
+                return $lol;
+            }
+            else{
+            $lol['arch']=$count;
             return $lol;
+          }
+          return $lol;
         }
 
         if ($request->hasFile('curp')) {
             $archivo = Archivo::where(['aspirante_id'=>$request->id,'tipo'=>$request->tipo1])->first();
-            if($archivo){
-              Storage::delete($archivo->ruta);
+            if ($archivo) {
+                Storage::delete($archivo->ruta);
             }
 
             $files = $request->file('curp');
 
             foreach ($files as $key => $file) {
                 $nombre = "curp.".$file->getClientOriginalExtension();
-                $file->storeAs('public/'.$request->Curp.'/',$nombre);
-                Archivo::updateOrCreate(['aspirante_id'=>$request->id, 'tipo'=>$request->tipo1],['aspirante_id'=> $request->id, 'name'=> $nombre, 'ruta' => 'public/'.$request->Curp.'/'.$nombre, 'tipo'=>$request->tipo1]);
-
+                $file->storeAs('public/'.$request->Curp.'/', $nombre);
+                Archivo::updateOrCreate(['aspirante_id'=>$request->id, 'tipo'=>$request->tipo1], ['aspirante_id'=> $request->id, 'name'=> $nombre, 'ruta' => 'public/'.$request->Curp.'/'.$nombre, 'tipo'=>$request->tipo1]);
             }
-
         }
         if ($request->hasFile('acta')) {
-          $archivo = Archivo::where(['aspirante_id'=>$request->id,'tipo'=>$request->tipo2])->first();
-          if($archivo){
-            Storage::delete($archivo->ruta);
-          }
+            $archivo = Archivo::where(['aspirante_id'=>$request->id,'tipo'=>$request->tipo2])->first();
+            if ($archivo) {
+                Storage::delete($archivo->ruta);
+            }
 
             $files = $request->file('acta');
 
             foreach ($files as $key => $file) {
                 $nombre = "acta.".$file->getClientOriginalExtension();
-                $file->storeAs('public/'.$request->Curp.'/',$nombre);
-                Archivo::updateOrCreate(['aspirante_id'=>$request->id, 'tipo'=>$request->tipo2],['aspirante_id'=> $request->id, 'name'=> $nombre, 'ruta' => 'public/'.$request->Curp.'/'.$nombre, 'tipo'=>$request->tipo2]);
-
+                $file->storeAs('public/'.$request->Curp.'/', $nombre);
+                Archivo::updateOrCreate(['aspirante_id'=>$request->id, 'tipo'=>$request->tipo2], ['aspirante_id'=> $request->id, 'name'=> $nombre, 'ruta' => 'public/'.$request->Curp.'/'.$nombre, 'tipo'=>$request->tipo2]);
             }
-
         }
         if ($request->hasFile('certificado')) {
-          $archivo = Archivo::where(['aspirante_id'=>$request->id,'tipo'=>$request->tipo3])->first();
-          if($archivo){
-            Storage::delete($archivo->ruta);
-          }
+            $archivo = Archivo::where(['aspirante_id'=>$request->id,'tipo'=>$request->tipo3])->first();
+            if ($archivo) {
+                Storage::delete($archivo->ruta);
+            }
 
             $files = $request->file('certificado');
 
             foreach ($files as $key => $file) {
                 $nombre = "certificado.".$file->getClientOriginalExtension();
-                $file->storeAs('public/'.$request->Curp.'/',$nombre);
-                Archivo::updateOrCreate(['aspirante_id'=>$request->id, 'tipo'=>$request->tipo3],['aspirante_id'=> $request->id, 'name'=> $nombre, 'ruta' => 'public/'.$request->Curp.'/'.$nombre, 'tipo'=>$request->tipo3
+                $file->storeAs('public/'.$request->Curp.'/', $nombre);
+                Archivo::updateOrCreate(['aspirante_id'=>$request->id, 'tipo'=>$request->tipo3], ['aspirante_id'=> $request->id, 'name'=> $nombre, 'ruta' => 'public/'.$request->Curp.'/'.$nombre, 'tipo'=>$request->tipo3
 
 
 
               ]);
-
             }
-
         }
         if ($request->hasFile('identificacion')) {
-
-          $archivo = Archivo::where(['aspirante_id'=>$request->id,'tipo'=>$request->tipo4])->first();
-          if($archivo){
-            Storage::delete($archivo->ruta);
-          }
+            $archivo = Archivo::where(['aspirante_id'=>$request->id,'tipo'=>$request->tipo4])->first();
+            if ($archivo) {
+                Storage::delete($archivo->ruta);
+            }
 
             $files = $request->file('identificacion');
 
             foreach ($files as $key => $file) {
                 $nombre = "identificacion.".$file->getClientOriginalExtension();
-                $file->storeAs('public/'.$request->Curp.'/',$nombre);
-                Archivo::updateOrCreate(['aspirante_id'=>$request->id, 'tipo'=>$request->tipo4],['aspirante_id'=> $request->id, 'name'=> $nombre, 'ruta' => 'public/'.$request->Curp.'/'.$nombre, 'tipo'=>$request->tipo4]);
-
+                $file->storeAs('public/'.$request->Curp.'/', $nombre);
+                Archivo::updateOrCreate(['aspirante_id'=>$request->id, 'tipo'=>$request->tipo4], ['aspirante_id'=> $request->id, 'name'=> $nombre, 'ruta' => 'public/'.$request->Curp.'/'.$nombre, 'tipo'=>$request->tipo4]);
             }
-
         }
         if ($request->hasFile('comprobante')) {
-          $archivo = Archivo::where(['aspirante_id'=>$request->id,'tipo'=>$request->tipo5])->first();
-          if($archivo){
-            Storage::delete($archivo->ruta);
-          }
+            $archivo = Archivo::where(['aspirante_id'=>$request->id,'tipo'=>$request->tipo5])->first();
+            if ($archivo) {
+                Storage::delete($archivo->ruta);
+            }
 
             $files = $request->file('comprobante');
 
             foreach ($files as $key => $file) {
                 $nombre = "comprobante.".$file->getClientOriginalExtension();
-                $file->storeAs('public/'.$request->Curp.'/',$nombre);
-                Archivo::updateOrCreate(['aspirante_id'=>$request->id, 'tipo'=>$request->tipo5],['aspirante_id'=> $request->id, 'name'=> $nombre, 'ruta' => 'public/'.$request->Curp.'/'.$nombre, 'tipo'=>$request->tipo5]);
-
+                $file->storeAs('public/'.$request->Curp.'/', $nombre);
+                Archivo::updateOrCreate(['aspirante_id'=>$request->id, 'tipo'=>$request->tipo5], ['aspirante_id'=> $request->id, 'name'=> $nombre, 'ruta' => 'public/'.$request->Curp.'/'.$nombre, 'tipo'=>$request->tipo5]);
             }
-
         }
-
     }
 
     public function busqueda(Request $request)
     {
-
         $aspirante = json_encode(Aspirante::where('Curp', $request->curp)->count());
         if ($aspirante) {
+            $datos = Aspirante::where('Curp', $request->curp)->first();
+            $pais = Pais::where("id", $datos->Clave_Pais_Nacimiento)->first();
 
-          $datos = Aspirante::where('Curp', $request->curp)->first();
-          $pais = Pais::where("id", $datos->Clave_Pais_Nacimiento)->first();
-
-          $archivos = json_decode(Archivo::where('aspirante_id', $datos->id)->get());
-          if($datos->Estado_Nacimiento!=null){
-          $estado = Entidad::where('Clave_Entidad', $datos->Estado_Nacimiento)->first();
-          $datos["Estado"] =  mb_strtoupper($estado->Entidad_Dsc);
-          }
-          if($datos->Estado_Nacimiento!= null && $datos->Lugar_Nacimiento != null){
-          $lugar = Poblacion::where([['Clave_Entidad', $datos->Estado_Nacimiento],
+            $archivos = json_decode(Archivo::where('aspirante_id', $datos->id)->get());
+            if ($datos->Estado_Nacimiento!=null) {
+                $estado = Entidad::where('Clave_Entidad', $datos->Estado_Nacimiento)->first();
+                $datos["Estado"] =  mb_strtoupper($estado->Entidad_Dsc);
+            }
+            if ($datos->Estado_Nacimiento!= null && $datos->Lugar_Nacimiento != null) {
+                $lugar = Poblacion::where([['Clave_Entidad', $datos->Estado_Nacimiento],
                                      ['Clave_Poblacion', $datos->Lugar_Nacimiento]])->first();
-          $datos["Lugar"] = mb_strtoupper($lugar->Poblacion_Dsc);
-          }
-          $datos["Nacionalidads"] = !$datos['Nacionalidad']? "MEXICANA": "EXTRANJERO";
-          $datos["Fecha_Nacimiento"] = Carbon::parse($datos["Fecha_Nacimiento"])->format('Y-m-d');
-          if($datos->municipio_id!= null){
-          $lugar = Poblacion::where('id', $datos->municipio_id)->first();
-          $datos["municipio"] = $datos->municipio_id;
-          $estado = Entidad::where('Clave_Entidad', $datos->estado_id)->first();
-          $datos["estado"] = $datos->estado_id;
-          }
-          $datos["archivos"] = $archivos;
+                $datos["Lugar"] = mb_strtoupper($lugar->Poblacion_Dsc);
+            }
+            $datos["Nacionalidads"] = !$datos['Nacionalidad']? "MEXICANA": "EXTRANJERO";
+            $datos["Fecha_Nacimiento"] = Carbon::parse($datos["Fecha_Nacimiento"])->format('Y-m-d');
+            if ($datos->municipio_id!= null) {
+                $lugar = Poblacion::where('id', $datos->municipio_id)->first();
+                $datos["municipio"] = $datos->municipio_id;
+                $estado = Entidad::where('Clave_Entidad', $datos->estado_id)->first();
+                $datos["estado"] = $datos->estado_id;
+            }
+            $datos["archivos"] = $archivos;
 
             $datos["sexo"]= ($datos["Sexo"]=="M")?"MUJER":"HOMBRE";
             $datos["PaisNacimiento"] = $pais->Pais_Dsc;
             $datos['Edad'] = Carbon::parse($datos->Fecha_Nacimiento)->age;
-          return response()->json($datos);
-        }
-        else {
-
-          $client = new Client();
-          $res = $client->request('POST',"http://www.renapo.sep.gob.mx/wsrenapo/MainControllerParam",
-            [
+            return response()->json($datos);
+        } else {
+            $client = new Client();
+            $res = $client->request(
+              'POST',
+              "http://www.renapo.sep.gob.mx/wsrenapo/MainControllerParam",
+              [
               'form_params' => [
                 'curp' => $request->curp,
                 'Submit' => 'Enviar',
@@ -252,43 +257,43 @@ class AspiranteController extends Controller
               ]
             ]
           );
-          $html =  (string)$res->getBody()->getContents();
-          $datos_curp = explode('>', $html);
-          $Entidads =utf8_encode(substr($datos_curp[180], 0, -5));
-          $municipio =utf8_encode(substr($datos_curp[90], 0, -5));
-          $estado = Entidad::where('Clave_Entidad', (int)$Entidads)->first();
-          $lugar = Poblacion::where([['Clave_Entidad', $Entidads],
+            $html =  (string)$res->getBody()->getContents();
+            $datos_curp = explode('>', $html);
+            $Entidads =utf8_encode(substr($datos_curp[180], 0, -5));
+            $municipio =utf8_encode(substr($datos_curp[90], 0, -5));
+            $estado = Entidad::where('Clave_Entidad', (int)$Entidads)->first();
+            $lugar = Poblacion::where([['Clave_Entidad', $Entidads],
                                      ['Clave_Poblacion', (int)$municipio]])->first();
-          /*
-          $Entidad = mb_strtoupper($estados[$Entidads-1]->name);
+            /*
+            $Entidad = mb_strtoupper($estados[$Entidads-1]->name);
 
 
 
-          $municipio = (int)$municipio;
-          $at = (int)$municipio;
-          $counts =  count($municipios);
-          for ($i=0; $i < $counts; $i++) {
+            $municipio = (int)$municipio;
+            $at = (int)$municipio;
+            $counts =  count($municipios);
+            for ($i=0; $i < $counts; $i++) {
 
-              if ($Entidads == $municipios[$i]['state_id'] && $municipio == $municipios[$i]['id']) {
-                  $Entidadea = $municipios[$i]['state_id'];
-                  $municipio = $municipios[$i]["name"];
-                  break;
-              }
-          }
+                if ($Entidads == $municipios[$i]['state_id'] && $municipio == $municipios[$i]['id']) {
+                    $Entidadea = $municipios[$i]['state_id'];
+                    $municipio = $municipios[$i]["name"];
+                    break;
+                }
+            }
 */
-          $pais_nacimiento = substr($datos_curp[150], 0, -5);
-          $pais = Pais::where("Abreviatura_Pais", $pais_nacimiento)->first();
+            $pais_nacimiento = substr($datos_curp[150], 0, -5);
+            $pais = Pais::where("Abreviatura_Pais", $pais_nacimiento)->first();
 
-          if ($pais_nacimiento == "MEX") {
-              $pais_nacimiento = "MÉXICO";
-              $nacionalidad = 0;
-              $nacionalidads = "MEXICANA";
-          } else {
-              $pais_nacimiento=$pais_nacimiento;
-              $nacionalidad = 1;
-              $nacionalidads="EXTRANJERO";
-          }
-          $curps = array('Curp' => utf8_encode($request->curp),
+            if ($pais_nacimiento == "MEX") {
+                $pais_nacimiento = "MÉXICO";
+                $nacionalidad = 0;
+                $nacionalidads = "MEXICANA";
+            } else {
+                $pais_nacimiento=$pais_nacimiento;
+                $nacionalidad = 1;
+                $nacionalidads="EXTRANJERO";
+            }
+            $curps = array('Curp' => utf8_encode($request->curp),
             'Nombre' => utf8_encode(substr($datos_curp[160], 0, -5)),
             'Primer_Apellido' => utf8_encode(substr($datos_curp[30], 0, -5)),
             'Segundo_Apellido' => utf8_encode(substr($datos_curp[40], 0, -5)),
@@ -304,20 +309,20 @@ class AspiranteController extends Controller
             'Lugar_Nacimiento' => $lugar->Clave_Poblacion,
             'Edad' => Carbon::parse(utf8_encode(str_replace('/', "-", substr($datos_curp[110], 0, -5))))->age
           );
-          $curps["sexo"]= utf8_encode(substr($datos_curp[200], 0, -5))=="M"?"MUJER":"HOMBRE";
+            $curps["sexo"]= utf8_encode(substr($datos_curp[200], 0, -5))=="M"?"MUJER":"HOMBRE";
 
-          return response()->json($curps);
-          // return $curps;
+            return response()->json($curps);
+            // return $curps;
         }
         return response()->json($curps);
-
     }
 
     public function guardar(Request $request)
     {
         $lol = Aspirante::updateOrCreate(
-          ['id'=>$request->id],
-        $request->except(['Edad', 'count', 'Lugar', 'Estado', 'Nacionalidads','domicilio', 'colonias','Estado','Municipio']));
+            ['id'=>$request->id],
+            $request->except(['Edad', 'count', 'Lugar', 'Estado', 'Nacionalidads','domicilio', 'colonias','Estado','Municipio'])
+        );
         return $lol;
     }
 

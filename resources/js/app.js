@@ -19,7 +19,6 @@ import 'vue-loading-overlay/dist/vue-loading.css'
 
 import Loading from 'vue-loading-overlay'
 Vue.use(Loading);
-Vue.config.devtools = true
 /**
  * The following block of code may be used to automatically register your
  * Vue components. It will recursively scan this directory for the Vue
