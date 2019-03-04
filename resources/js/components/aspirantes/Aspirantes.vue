@@ -1,4 +1,4 @@
-Estado<template>
+<template>
 <div class="container">
     <form-wizard @on-complete="onComplete" @on-loading="setLoading" @on-validate="handleValidation" @on-error="handleErrorMessage" shape="tab" back-button-text="Anterior!" next-button-text="Siguiente!" error-color="#e74c3c">
         <h2 slot="title">Pre-Registro</h2>
@@ -18,7 +18,7 @@ Estado<template>
             <div class="form-group">
               <a href="https://www.gob.mx/curp/" class="btn btn-primary btn-md active" role="button" aria-pressed="true" target="_blank">Consulta CURP</a>
             </div>
-        </tab-content>
+    </tab-content>
 
         <tab-content title="Datos Personales" :before-change="validarCampos" icon="fas fa-user">
 
