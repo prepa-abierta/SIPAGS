@@ -1,4 +1,4 @@
-Estado<template>
+<template>
 <div class="container">
     <form-wizard @on-complete="onComplete" @on-loading="setLoading" @on-validate="handleValidation" @on-error="handleErrorMessage" shape="tab" back-button-text="Anterior!" next-button-text="Siguiente!" error-color="#e74c3c">
         <h2 slot="title">Pre-Registro</h2>
@@ -15,8 +15,10 @@ Estado<template>
                 <label for="curp">CURP</label>
                 <input type="text" ref="curp" class="form-control" id="curp" value="ROSL960503HSLSLS05" placeholder="BADD110313HCMLNS09" maxlength="18" min="18" required>
             </div>
-            
-        </tab-content>
+            <div class="form-group">
+              <a href="https://www.gob.mx/curp/" class="btn btn-primary btn-md active" role="button" aria-pressed="true" target="_blank">Consulta CURP</a>
+            </div>
+    </tab-content>
 
         <tab-content title="Datos Personales" :before-change="validarCampos" icon="fas fa-user">
 
@@ -192,7 +194,11 @@ Estado<template>
                     <label for="folioSurem">Folio Surem</label>
                     <input type="text" class="form-control" :class="{'is-invalid': errors.Folio_Surems}" v-model="curps.Folio_Surems" id="folioSurem">
                     <div class="invalid-feedback" v-if="errors.Folio_Surems">{{errors.Folio_Surems[0]}}</div>
+                    <div class="form-group">
+                      <a href="http://surems.seg.guanajuato.gob.mx/Account/Login" class="btn btn-primary btn-md active" role="button" aria-pressed="true" target="_blank">Consulta Folio SUREMS</a>
+                    </div>
                 </div>
+
                 <div class="form-group col-md-8">
                     <button v-on:click="guardarProceso('3')"class="btn btn-primary float-right">Guardar Proceso</button>
                 </div>
@@ -252,16 +258,7 @@ Estado<template>
         </tab-content>
 
         <tab-content title="Archivos" icon="fas fa-check">
-            <!-- <div class="form-group col-md-12">
-                <div class="form-row">
-                    <div class="custom-file">
-                        <label class="custom-file-label" for="identificacion">Seleccionar {{archivo[count]}}</label>
-                        <input class="custom-file-input" type="file" id="files" :disabled="count == 5" ref="files" accept="image/jpeg,image/png,application/pdf" multiple v-on:change="generarArchivo()" />
-                        </label>
-                    </div>
-                </div>
-            </div> -->
-            <!-- CURP -->
+
             <div class="form-group col-md-12">
               <div class="form-row">
                 <div class="custom-file col-md-6">
@@ -277,7 +274,7 @@ Estado<template>
                         <tbody>
                             <tr v-for="(file, key) in archivoCurp" scope="row">
                                 <td>{{ file.name }}</td>
-                                <td><span class="btn btn-danger btn-sm" v-on:click="removeCurp( key, file.ruta, file.id )"><span class="fas fa-times"></span> Borrar</span></td>
+                                <td><span class="btn btn-danger btn-sm" v-on:click="removeArchivo( key, file.ruta, file.id, archivoCurp )"><span class="fas fa-times"></span> Borrar</span></td>
                                 <td v-if="file.tipo"> <button class="btn btn-success btn-sm" v-on:click="getArchivo(file.name, 1)" name="button">Visualizar</button> </td>
                                 <td v-if="file.tipo"> <button class="btn btn-success btn-sm" v-on:click="getArchivo(file.name, 2)" name="button">Descargar</button> </td>
 
@@ -305,7 +302,7 @@ Estado<template>
                     <tbody>
                         <tr v-for="(file, key) in archivoActa" scope="row">
                             <td>{{ file.name }}</td>
-                            <td><span class="btn btn-danger btn-sm" v-on:click="removeActa( key, file.ruta, file.id )"><span class="fas fa-times"></span> Borrar</span></td>
+                            <td><span class="btn btn-danger btn-sm" v-on:click="removeArchivo( key, file.ruta, file.id, archivoActa )"><span class="fas fa-times"></span> Borrar</span></td>
                             <td v-if="file.tipo"> <button class="btn btn-success btn-sm" v-on:click="getArchivo(file.name, 1)" name="button">Visualizar</button> </td>
                             <td v-if="file.tipo"> <button class="btn btn-success btn-sm" v-on:click="getArchivo(file.name, 2)" name="button">Descargar</button> </td>
 
@@ -332,7 +329,7 @@ Estado<template>
                     <tbody>
                         <tr v-for="(file, key) in archivoCertificado" scope="row">
                             <td>{{ file.name }}</td>
-                            <td><span class="btn btn-danger btn-sm" v-on:click="removeCertificado( key, file.ruta, file.id )"><span class="fas fa-times"></span> Borrar</span></td>
+                            <td><span class="btn btn-danger btn-sm" v-on:click="removeArchivo( key, file.ruta, file.id, archivoCertificado )"><span class="fas fa-times"></span> Borrar</span></td>
                             <td v-if="file.tipo"> <button class="btn btn-success btn-sm" v-on:click="getArchivo(file.name, 1)" name="button">Visualizar</button> </td>
                             <td v-if="file.tipo"> <button class="btn btn-success btn-sm" v-on:click="getArchivo(file.name, 2)" name="button">Descargar</button> </td>
 
@@ -360,7 +357,7 @@ Estado<template>
                     <tbody>
                         <tr v-for="(file, key) in archivoIdenti" scope="row">
                             <td>{{ file.name }}</td>
-                            <td><span class="btn btn-danger btn-sm" v-on:click="removeIdenti( key, file.ruta, file.id )"><span class="fas fa-times"></span> Borrar</span></td>
+                            <td><span class="btn btn-danger btn-sm" v-on:click="removeArchivo( key, file.ruta, file.id, archivoIdenti )"><span class="fas fa-times"></span> Borrar</span></td>
                             <td v-if="file.tipo"> <button class="btn btn-success btn-sm" v-on:click="getArchivo(file.name, 1)" name="button">Visualizar</button> </td>
                             <td v-if="file.tipo"> <button class="btn btn-success btn-sm" v-on:click="getArchivo(file.name, 2)" name="button">Descargar</button> </td>
 
@@ -388,7 +385,7 @@ Estado<template>
                     <tbody>
                         <tr v-for="(file, key) in archivoComproba" scope="row">
                             <td>{{ file.name }}</td>
-                            <td><span class="btn btn-danger btn-sm" v-on:click="removeComproba( key, file.ruta, file.id )"><span class="fas fa-times"></span> Borrar</span></td>
+                            <td><span class="btn btn-danger btn-sm" v-on:click="removeArchivo( key, file.ruta, file.id, archivoComproba )"><span class="fas fa-times"></span> Borrar</span></td>
                             <td v-if="file.tipo"> <button class="btn btn-success btn-sm" v-on:click="getArchivo(file.name, 1)" name="button">Visualizar</button> </td>
                             <td v-if="file.tipo"> <button class="btn btn-success btn-sm" v-on:click="getArchivo(file.name, 2)" name="button">Descargar</button> </td>
 
@@ -398,17 +395,10 @@ Estado<template>
                   </div>
                 </div>
               </div>
-
         </tab-content>
 
 
         <div class="loader" v-if="loadingWizard"></div>
-
-        <!-- <div v-if="this.errorMsg">
-          <div v-for="(error, key) in this.errorMsg" class="alert alert-danger">
-            <span class="error">{{error}}</span>
-          </div> -->
-        <!-- </div> -->
 
     </form-wizard>
 </div>
@@ -483,7 +473,7 @@ export default {
     },
     methods: {
         onComplete: function() {
-          this.errors=[];
+            this.errors = [];
             this.$swal({
                 title: '¿Deseas Completar el Registro?',
                 text: "Verifica Que Los Archivos y Datos Sean Correctos!",
@@ -495,13 +485,6 @@ export default {
                 cancelButtonText: 'Cancelar'
             }).then((willDelete) => {
                 if (willDelete.value) {
-
-
-
-
-
-
-
                     let loader = this.$loading.show({
                         container: this.fullPage ? null : this.$refs.formContainer,
                         canCancel: true,
@@ -510,12 +493,6 @@ export default {
                     return new Promise((resolve, reject) => {
                         setTimeout(() => {
                             let formData = new FormData();
-                            // if (this.files) {
-                            //     for (var i = 0; i < this.files.length; i++) {
-                            //         let file = this.files[i];
-                            //         formData.append('files[' + i + ']', file);
-                            //     }
-                            // }
                             if (this.archivoCurp) {
                                 formData.append('tipo1', "Curp");
                                 for (var i = 0; i < this.archivoCurp.length; i++) {
@@ -528,7 +505,6 @@ export default {
                                 for (var i = 0; i < this.archivoActa.length; i++) {
                                     let file = this.archivoActa[i];
                                     formData.append('acta[' + i + ']', file);
-
                                 }
                             }
                             if (this.archivoCertificado) {
@@ -560,40 +536,12 @@ export default {
                                             'Content-Type': 'multipart/form-data'
                                         }
                                     }
-                                ).then(response => {
-                                    loader.hide()
-
-
-                                })
+                                ).then(response => {})
                                 .catch(error => {
-                                    loader.hide()
                                     this.errors = error.response.data.errors
                                 })
-                                .finally(() => loader.hide())
-
+                                .finally(() => {})
                             var curp = this.curps;
-                            /*formData.append("Curp", curp['Curp']);
-                            formData.append('Paterno', this.curps['Paterno']);
-                            formData.append('Materno', this.curps['Materno']);
-                            formData.append('Nombre', this.curps['Nombre']);
-                            formData.append('Fecha_Nacimiento', this.curps['Fecha_Nacimiento']);
-                            formData.append('Municipio', this.curps['Municipio']);
-                            formData.append('Entidad', this.curps['Entidad']);
-                            formData.append('Nacionalidad', this.curps['Nacionalidad']);
-                            formData.append('Pais_Nacimiento', this.curps['Pais_Nacimiento']);
-                            formData.append('Sexo', this.curps['Sexo']);
-                            formData.append('Celular', this.curps['Celular']);
-                            formData.append('Telefono', this.curps['Telefono']);
-                            formData.append('Correo', this.curps['Correo']);
-                            formData.append('DomicilioE', this.curps.domicilio['estado']);
-                            formData.append("DomicilioM", this.curps.domicilio['municipio']);
-                            formData.append("DomicilioC", this.curps.colonias);
-                            formData.append("DomicilioD", this.curps.direccion);
-                            formData.append("Clave_Ultimo_Grado", this.curps["Clave_Ultimo_Grado"]);
-                            formData.append('Escuela_Procedencia', this.curps["Escuela_Procedencia"]);
-                            formData.append('Numero_Certificado', this.curps["Numero_Certificado"]);
-                            formData.append("Nivel_Escolaridad", this.curps["Nivel_Escolaridad"]);*/
-
                             axios.post(`/api/aspirantes/preregistrar/`, curp)
                                 .then(response => {
                                     for (var i = 0; i < response.data.archivos.length; i++) {
@@ -618,14 +566,23 @@ export default {
                                             this.archivoComproba.push(response.data.archivos[i]);
                                         }
                                     }
-                                    loader.hide()
-                                    this.$swal({
-                                        title: 'Correcto!',
-                                        text: 'Has Sido Pre-registrado Correctamente',
-                                        type: 'success',
-                                        confirmButtonText: 'Aceptar'
-                                    })
+                                    if (response.data.arch) {
+                                        this.$swal({
+                                            title: 'Advertencia!',
+                                            text: 'Te Faltan Archivos Por Subir!',
+                                            type: 'warning',
+                                            confirmButtonText: 'Aceptar'
+                                        })
 
+                                    } else {
+                                        this.$swal({
+                                            title: 'Correcto!',
+                                            html: 'Has Sido Pre-registrado Correctamente!<br>Se Te Ha Enviado Un Mensaje de Bienvenida!',
+                                            type: 'success',
+                                            confirmButtonText: 'Aceptar'
+                                        })
+
+                                    }
                                 })
                                 .catch(error => {
                                     loader.hide()
@@ -667,69 +624,49 @@ export default {
                 this.archivoIdenti.push(identificacion[i]);
             }
         },
-        generarArchivo() {
-            let uploadedFiles = this.$refs.files.files;
-
-            for (var i = 0; i < uploadedFiles.length; i++) {
-                this.files.push(uploadedFiles[i]);
-
-            }
-        },
-        removeFile(key) {
-
-            this.files.splice(key, 1);
-
-        },
-        removeCurp(key, file, id) {
+        removeArchivo(key, file, id, arrays) {
             let formData = new FormData();
             formData.append("file", file);
             formData.append("id", id);
             axios.post(`/api/archivos/eliminar`, formData)
                 .then(response => {})
-            this.archivoCurp.splice(key, 1);
-
+            arrays.splice(key, 1);
         },
-        removeActa(key, file, id) {
-            let formData = new FormData();
-            formData.append("file", file);
-            formData.append("id", id);
-            axios.post(`/api/archivos/eliminar`, formData)
-                .then(response => {})
-            this.archivoActa.splice(key, 1);
-
-        },
-        removeCertificado(key, file, id) {
-            let formData = new FormData();
-            formData.append("file", file);
-            formData.append("id", id);
-            axios.post(`/api/archivos/eliminar`, formData)
-                .then(response => {})
-            this.archivoCertificado.splice(key, 1);
-
-        },
-        removeComproba(key, file, id) {
-            let formData = new FormData();
-            formData.append("file", file);
-            formData.append("id", id);
-            axios.post(`/api/archivos/eliminar`, formData)
-                .then(response => {})
-            this.archivoComproba.splice(key, 1);
-
-        },
-        removeIdenti(key, file, id) {
-            let formData = new FormData();
-            formData.append("file", file);
-            formData.append("id", id);
-            axios.post(`/api/archivos/eliminar`, formData)
-                .then(response => {})
-            this.archivoIdenti.splice(key, 1);
-
-        },
+        // removeActa(key, file, id) {
+        //     let formData = new FormData();
+        //     formData.append("file", file);
+        //     formData.append("id", id);
+        //     axios.post(`/api/archivos/eliminar`, formData)
+        //         .then(response => {})
+        //     this.archivoActa.splice(key, 1);
+        // },
+        // removeCertificado(key, file, id) {
+        //     let formData = new FormData();
+        //     formData.append("file", file);
+        //     formData.append("id", id);
+        //     axios.post(`/api/archivos/eliminar`, formData)
+        //         .then(response => {})
+        //     this.archivoCertificado.splice(key, 1);
+        // },
+        // removeComproba(key, file, id) {
+        //     let formData = new FormData();
+        //     formData.append("file", file);
+        //     formData.append("id", id);
+        //     axios.post(`/api/archivos/eliminar`, formData)
+        //         .then(response => {})
+        //     this.archivoComproba.splice(key, 1);
+        // },
+        // removeIdenti(key, file, id) {
+        //     let formData = new FormData();
+        //     formData.append("file", file);
+        //     formData.append("id", id);
+        //     axios.post(`/api/archivos/eliminar`, formData)
+        //         .then(response => {})
+        //     this.archivoIdenti.splice(key, 1);
+        // },
         getCodigo() {
-          this.errors=[];
-
+            this.errors = [];
             this.loading = true;
-
             return new Promise((resolve, reject) => {
                 setTimeout(() => {
                     let formData = new FormData();
@@ -744,7 +681,6 @@ export default {
                                 this.curps.es = response.data.es;
                                 this.curps.muni = response.data.muni;
                                 if (this.domicilio.municipio) {
-
                                     this.colonias = this.domicilio.colonias;
                                     this.loading = false;
                                 } else {
@@ -776,15 +712,14 @@ export default {
             this.loadingWizard = value
         },
         handleValidation: function(isValid, tabIndex) {
-            // console.log('Tab: ' + tabIndex + ' valid: ' + isValid)
+            // console.log('Tab: ' + tabIndex + ' valid: ' + i
         },
         handleErrorMessage: function(errorMsg) {
             this.errorMsg = errorMsg
         },
         //#Region Validar{
         validarCampos: function() {
-          this.errors=[];
-
+            this.errors = [];
             let loader = this.$loading.show({
                 container: this.fullPage ? null : this.$refs.formContainer,
                 canCancel: true,
@@ -794,15 +729,14 @@ export default {
                 setTimeout(() => {
                     var curp = this.curps;
                     curp.count = 1;
-                    if(this.checked){
-                    if (curp.discapacidad_id) {
-                        curp['Discapacidad'] = 1;
+                    if (this.checked) {
+                        if (curp.discapacidad_id) {
+                            curp['Discapacidad'] = 1;
+                        }
+                    } else {
+                        curp.discapacidad_id = null;
+                        curp['Discapacidad'] = 0;
                     }
-                  }
-                  else {
-                    curp.discapacidad_id = null;
-                    curp['Discapacidad']=0;
-                  }
                     axios.post(`/api/aspirantes/preregistrar/`, curp)
                         .then(response => {
                             resolve(true);
@@ -822,14 +756,18 @@ export default {
                     if (this.$refs.terminos.checked == true) {
                         resolve(true)
                     } else {
+                        this.$swal({
+                            type: 'error',
+                            title: 'Error',
+                            text: 'No Aceptó Los Terminos y Condiciones!',
+                        })
                         reject('No aceptó los terminos y condiciones');
                     }
                 }, 1000)
             })
         },
         validarCurp: function() {
-          this.errors=[];
-
+            this.errors = [];
             let loader = this.$loading.show({
                 container: this.fullPage ? null : this.$refs.formContainer,
                 canCancel: true,
@@ -837,7 +775,6 @@ export default {
             });
             this.curps = null;
             this.curps = this.cur;
-
             return new Promise((resolve, reject) => {
                 setTimeout(() => {
                     if (this.$refs.curp.value.length == 18) {
@@ -872,10 +809,7 @@ export default {
                                     if (response.data.archivos[i].tipo == "Comprobante") {
                                         this.archivoComproba[0] = response.data.archivos[i];
                                     }
-
-
                                 }
-
                             })
                             .catch(error => {
                                 if (error) {
@@ -910,8 +844,7 @@ export default {
             })
         },
         validarEscolar: function() {
-          this.errors=[];
-
+            this.errors = [];
             let loader = this.$loading.show({
                 container: this.fullPage ? null : this.$refs.formContainer,
                 canCancel: true,
@@ -932,18 +865,14 @@ export default {
                         })
                         .catch(error => {
                             this.errors = error.response.data.errors
-
-
                             reject(true);
-
                         })
                         .finally(() => loader.hide())
                 }, 1000)
             })
         },
         validarDomicilio: function() {
-          this.errors=[];
-
+            this.errors = [];
             let loader = this.$loading.show({
                 container: this.fullPage ? null : this.$refs.formContainer,
                 canCancel: true,
@@ -956,16 +885,12 @@ export default {
                     curp.count = 3;
                     axios.post(`/api/aspirantes/preregistrar/`, curp)
                         .then(response => {
-
                             resolve(true);
                             this.curps.id = response.data.id;
                         })
                         .catch(error => {
                             this.errors = error.response.data.errors
-
-
                             reject(true);
-
                         })
                         .finally(() => {
                             loader.hide()
@@ -973,14 +898,12 @@ export default {
                 }, 1000)
             })
         },
-        //#endregion}
+        //#endregion
         getCurrentYear() {
             return new Date().getFullYear();
         },
-
         guardarProceso: function(count) {
-          this.errors=[];
-
+            this.errors = [];
             let loader = this.$loading.show({
                 container: this.fullPage ? null : this.$refs.formContainer,
                 canCancel: true,
@@ -994,15 +917,14 @@ export default {
                         curp.municipio_id = null;
                         curp.estado_id = null;
                     }
-                    if(this.checked){
-                    if (curp.discapacidad_id) {
-                        curp['Discapacidad'] = 1;
+                    if (this.checked) {
+                        if (curp.discapacidad_id) {
+                            curp['Discapacidad'] = 1;
+                        }
+                    } else {
+                        curp.discapacidad_id = null;
+                        curp['Discapacidad'] = 0;
                     }
-                  }
-                  else {
-                    curp.discapacidad_id = null;
-                    curp['Discapacidad']=0;
-                  }
                     axios.post(`/api/aspirantes/guardar/`, curp)
                         .then(response => {
                             // resolve(true);
@@ -1056,9 +978,6 @@ export default {
                     const link = document.createElement('a');
                     link.href = url;
                     window.open(url, '_blank');
-                    // link.setAttribute('download', 'file.pdf');
-                    // document.body.appendChild(link);
-                    // link.click();
                 });
             } else {
                 axios({
@@ -1070,20 +989,11 @@ export default {
                     const url = window.URL.createObjectURL(new Blob([response.data]));
                     const link = document.createElement('a');
                     link.href = url;
-                    // window.open(url,'_blank');
                     link.setAttribute('download', files);
                     document.body.appendChild(link);
                     link.click();
                 });
             }
-            // axios.post(`/api/archivos/visualizar`, formData)
-            //     .then(response => {
-            //       let basesup = btoa(response)
-            //       let pdfWindow = window.open("")
-            //       pdfWindow.document.write("<iframe width='100%' height='100%' src='data:application/pdf;base64, " + encodeURI(basesup)+"'></iframe>")
-            //
-            //         console.log(response.data);
-            //     })
         }
     }
 }
