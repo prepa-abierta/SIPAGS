@@ -17,7 +17,145 @@
 @import '~@coreui/coreui/dist/css/coreui.min.css';
 
 
+//********COLORES********//
+$color_titulos: #000f9f;
+$color_fondo: #fafafa;
+$color_subtitulos: #0066ff;
+$color_texto: #616161;
+$color_base: #fff;
+$color_hover_button: #bdbdbd;
+$color_enlaces: #f45197;
+$color_enlaces_hover:#24ABE2;
+//********TAMAÑOS DE LETRA******//
+$letra_titulos: 2rem;
+$letra_subtitulos:1.5rem;
+$letra_texto:1rem;
+//********TIPOS DE LETRA********///
+$tipo_texto_titulos:'Montserrat', sans-serif;
+$tipo_texto: 'Roboto', sans-serif;
+
+
 .navbar-laravel {
   background-color: #fff;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+// .fondo{
+//   background-image: url('imagenes/fondo_portada.jpg');
+//  }
+ 
+
+/********ESTILOS  FORMULARIO DE ACCESO SIPAG***************/
+
+body {
+  background-image: url('/imagenes/fondo_.jpg');
+  top: 0;
+  bottom: 0;
+  position: relative;
+  background-repeat: no-repeat;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
+  height: 100%;
+  width: 100% ;
+}
+
+#formulario {
+  background: rgba(255,255,255,.8);
+  width: 100;
+  height: auto;
+  color:$color_subtitulos;
+  position: relative;
+  z-index: 1;
+}
+
+#formulario .contenido_form{
+  padding: 20px 40px 40px;
+}
+#formulario .head{
+  width: 100%;
+  height: auto;
+  padding: 10px;
+  background:  $color_hover_button;
+}
+
+#formulario img{
+  display: block;
+  margin: auto;
+  width: 50%;
+  height: 30%;
+}
+#formulario h2{
+  text-align: center;
+  font-family: $tipo_texto_titulos;
+  font-size: $letra_subtitulos;
+  padding: 15px 0px 0px 0px;
+  color: $color_subtitulos;
+  font-weight: bold;
+}
+#formulario label{
+  color: $color_texto;
+  font-size: $letra_texto;
+  padding: 10px 0px 0px 0px;
+  font-weight: bold;
+}
+#formiulario .form-control{
+  color: $color_hover_button;
+  font-size: $letra_texto;
+  padding: 20px !important;
+}
+
+#formulario input{
+  padding-left: 45px;
+}
+
+#formulario .form-control-feedback {
+  position: absolute;
+  // padding: 20px;
+  pointer-events: none;
+}
+
+#formulario i{
+  font-size: 1rem;
+  color: $color_subtitulos;
+  padding: 10px;
+  border-right: 1px solid $color_hover_button;
+}
+
+#formulario button{
+  margin-top: 30px;
+  width: 100%;
+  color: $color_subtitulos;
+  background: transparent !important;
+  border: 2px solid $color_subtitulos;
+  border-radius: 0px;
+  font-size: $letra_texto;
+  font-weight: bold;
+}
+#formulario button:hover{
+  color: $color_enlaces_hover;
+  border: 2px solid $color_enlaces_hover;
+}
+
+#formulario .contenido_form a{
+  text-decoration: none;
+  font-size: $letra_texto;
+  color: $color_enlaces;
+  font-weight: bold;
+  display: block;
+  margin: auto;
+}
+
+#formulario a:hover{
+  color: $color_enlaces_hover;
+}
+.overlay{
+  background-color:rgba(0,0,0,.7);
+  width:100%;
+  z-index: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
 }

@@ -33,6 +33,7 @@ Vue.config.devtools = true
 
 Vue.component('example-component', require('./components/ExampleComponent.vue').default);
 Vue.component('aspirantes-registro', require('./components/aspirantes/Aspirantes.vue').default);
+Vue.component('login', require('./components/login/acceso.vue').default);
 
 /**
  * Next, we will create a fresh Vue application instance and attach it to
