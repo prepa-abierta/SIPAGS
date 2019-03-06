@@ -10,23 +10,27 @@
 | contains the "web" middleware group. Now create something great!
 |
 */
-header('Access-Control-Allow-Origin:  *');
-header('Access-Control-Allow-Methods:  POST, GET, OPTIONS, PUT, DELETE');
-header('Access-Control-Allow-Headers:  Content-Type, X-Auth-Token, Origin, Authorization');
-Route::get('/index', function () {
+
+Route::get('/', function () {
     return view('welcome');
 });
 
-Route::view('/acceso', 'login.acceso');
+Auth::routes();
 
+Route::get('/home', function () {
+    return redirect('dashboard');
+});
 
+Route::get('/dashboard', 'DashboardController@index')->name('home');
 
 
 Route::post('/curp', 'CurpController@getCurp');
 
 Route::post('/preregistrar', 'AspiranteController@store');
 
-Route::get('/home', 'HomeController@index')->name('home');
+
+
+// Route::get('/home', 'HomeController@index')->name('home');
 
 require __DIR__ . '/aspirantes/aspirantes.php';
 require __DIR__ . '/codigop/codigop.php';
@@ -37,7 +41,8 @@ require __DIR__ . '/archivos/archivos.php';
 require __DIR__ . '/discapacidades/discapacidades.php';
 
 
-
-Auth::routes();
-
-Route::get('/home', 'HomeController@index')->name('home');
+require __DIR__ . '/profile/profile.php';
+require __DIR__ . '/users/users.php';
+require __DIR__ . '/roles/roles.php';
+require __DIR__ . '/roles/permissions.php';
+require __DIR__ . '/modules/modules.php';

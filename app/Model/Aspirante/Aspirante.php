@@ -45,7 +45,7 @@ class Aspirante extends Model
 
     //El aspirante pertenece a un país
 
-    public function archivo(){
+    public function archivos(){
         return $this->hasMany(Archivo::class);
     }
 
