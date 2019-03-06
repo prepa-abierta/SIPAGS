@@ -17,7 +17,22 @@ use Mail;
 
 class AspiranteController extends Controller
 {
+    public function filter(Request $request)
+    {
+        $query = Aspirante::query();
 
+        if ($request->search) {
+            $query->where('name', 'LIKE', '%'.$request->search.'%');
+        }
+        $aspirantes = $query->with('archivos')->orderBy($request->input('orderBy.column'), $request->input('orderBy.direction'))
+                  ->paginate($request->input('pagination.per_page'));
+
+        return $aspirantes;
+    }
+    public function show($aspirante)
+    {
+        return Aspirante::where('id', $aspirante)->with('archivos')->get();
+    }
     public function index()
     {
         //
@@ -67,9 +82,8 @@ class AspiranteController extends Controller
               'pais_id' => 'required',
 
             ];
-            if($request->Edad < 18)
-            {
-              $reglas2['Folio_Surems'] = 'required|numeric|digits:9';
+            if ($request->Edad < 18) {
+                $reglas2['Folio_Surems'] = 'required|numeric|digits:9';
             }
             if ($request->pais_id==4142) {
                 $reglas2['municipio_id'] = 'required';
@@ -114,27 +128,30 @@ class AspiranteController extends Controller
                 $request->except(['Edad', 'count', 'Lugar', 'Estado', 'Nacionalidads'])
             );
             $message = "Third Step";
-            $archivos = Archivo::where('aspirante_id', $lol->id)->get();
-            $lol['archivos']=$archivos;
-            $count = Archivo::where('aspirante_id', $request->id)->count();
-            if ($count == 5) {
-                $data = ['usuario' => $lol->Nombre.' '.$lol->Primer_Apellido.' '.$lol->Segundo_Apellido];
-
-                Mail::send('mails.mail', $data, function ($message) use ($lol){
-                    $message->from('preparatoriaabierta@seg.guanajuato.gob.mx', 'Prepa Abierta');
-
-                    $message->to($lol->Correo)->subject('Preinscripción');
-                });
-
-                return $lol;
-            }
-            else{
-            $lol['arch']=$count;
             return $lol;
+        }
+        if($request->count==4)
+        {
+          $lol = Aspirante::find($request->id);
+          $archivos = Archivo::where('aspirante_id', $request->id)->get();
+          $lol['archivos']=$archivos;
+          $count = Archivo::where('aspirante_id', $request->id)->count();
+          if ($count == 5) {
+              $data = ['usuario' => $lol->Nombre.' '.$lol->Primer_Apellido.' '.$lol->Segundo_Apellido];
+
+              Mail::send('mails.mail', $data, function ($message) use ($lol) {
+                  $message->from('preparatoriaabierta@seg.guanajuato.gob.mx', 'Prepa Abierta');
+
+                  $message->to($lol->Correo)->subject('Preinscripción');
+              });
+
+              return $lol;
+          } else {
+              $lol['arch']=$count;
+              return $lol;
           }
           return $lol;
         }
-
         if ($request->hasFile('curp')) {
             $archivo = Archivo::where(['aspirante_id'=>$request->id,'tipo'=>$request->tipo1])->first();
             if ($archivo) {
@@ -245,9 +262,9 @@ class AspiranteController extends Controller
         } else {
             $client = new Client();
             $res = $client->request(
-              'POST',
-              "http://www.renapo.sep.gob.mx/wsrenapo/MainControllerParam",
-              [
+                'POST',
+                "http://www.renapo.sep.gob.mx/wsrenapo/MainControllerParam",
+                [
               'form_params' => [
                 'curp' => $request->curp,
                 'Submit' => 'Enviar',
@@ -294,22 +311,22 @@ class AspiranteController extends Controller
                 $nacionalidads="EXTRANJERO";
             }
             $curps = array('Curp' => utf8_encode($request->curp),
-            'Nombre' => utf8_encode(substr($datos_curp[160], 0, -5)),
-            'Primer_Apellido' => utf8_encode(substr($datos_curp[30], 0, -5)),
-            'Segundo_Apellido' => utf8_encode(substr($datos_curp[40], 0, -5)),
-            'Sexo' => utf8_encode(substr($datos_curp[200], 0, -5)),
-            'Nacionalidads' => $nacionalidads,
-            'Nacionalidad' => $nacionalidad,
-            'Clave_Pais_Nacimiento' => $pais->Clave_Pais,
-            'PaisNacimiento' => $pais->Pais_Dsc,
+            'Nombre' => ucwords(mb_strtolower(utf8_encode(substr($datos_curp[160], 0, -5)))),
+            'Primer_Apellido' => ucwords(mb_strtolower(utf8_encode(substr($datos_curp[30], 0, -5)))),
+            'Segundo_Apellido' => ucwords(mb_strtolower(utf8_encode(substr($datos_curp[40], 0, -5)))),
+            'Sexo' => ucwords(mb_strtolower(utf8_encode(substr($datos_curp[200], 0, -5)))),
+            'Nacionalidads' => ucwords(mb_strtolower($nacionalidads)),
+            'Nacionalidad' => ucwords(mb_strtolower($nacionalidad)),
+            'Clave_Pais_Nacimiento' => ucwords(mb_strtolower($pais->Clave_Pais)),
+            'PaisNacimiento' => ucwords(mb_strtolower($pais->Pais_Dsc)),
             'Fecha_Nacimiento' => Carbon::parse(utf8_encode(str_replace('/', "-", substr($datos_curp[110], 0, -5))))->format('Y-m-d'),
-            'Estado' => mb_strtoupper($estado->Entidad_Dsc),//80
-            'Estado_Nacimiento' => $estado->Clave_Entidad,
-            'Lugar' => mb_strtoupper($lugar->Poblacion_Dsc),
-            'Lugar_Nacimiento' => $lugar->Clave_Poblacion,
+            'Estado' => ucwords(mb_strtolower($estado->Entidad_Dsc)),//80
+            'Estado_Nacimiento' => ucwords(mb_strtolower($estado->Clave_Entidad)),
+            'Lugar' => ucwords(mb_strtolower($lugar->Poblacion_Dsc)),
+            'Lugar_Nacimiento' => ucwords(mb_strtolower($lugar->Clave_Poblacion)),
             'Edad' => Carbon::parse(utf8_encode(str_replace('/', "-", substr($datos_curp[110], 0, -5))))->age
           );
-            $curps["sexo"]= utf8_encode(substr($datos_curp[200], 0, -5))=="M"?"MUJER":"HOMBRE";
+            $curps["sexo"]= utf8_encode(substr($datos_curp[200], 0, -5))=="M"?"Mujer":"Hombre";
 
             return response()->json($curps);
             // return $curps;
@@ -326,10 +343,7 @@ class AspiranteController extends Controller
         return $lol;
     }
 
-    public function show(Aspirante $aspirante)
-    {
-        //
-    }
+
 
 
     public function edit(Aspirante $aspirante)

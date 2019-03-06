@@ -542,6 +542,7 @@ export default {
                                 })
                                 .finally(() => {})
                             var curp = this.curps;
+                            curp.count = 4;
                             axios.post(`/api/aspirantes/preregistrar/`, curp)
                                 .then(response => {
                                     for (var i = 0; i < response.data.archivos.length; i++) {
